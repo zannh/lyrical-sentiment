@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import SongCard from './songcard';
+import Lyrics from './lyrics';
 
 export default class AppBody extends Component {
     constructor() {
         super();
         this.state = {
             query: "",
-            queryResult: []
+            queryResult: [],
+            songURL: "",
+            display: "songlist"
         }
     }
 
@@ -19,12 +22,16 @@ export default class AppBody extends Component {
         e.preventDefault();
         axios.get('http://api.genius.com/search?q=' + this.state.query + "&access_token=" + process.env.REACT_APP_GENIUS_CLIENT_TOKEN)
          .then(response => {
-            this.setState({queryResult: response.data.response.hits});
-            console.log(this.state.queryResult)
+            this.setState({queryResult: response.data.response.hits, display: "songlist"});
          })
          .catch((error) => {
             console.log(error);
          })
+    }
+
+    onSelectSong = (e) => {
+        this.setState({songURL: e.target.id, display: "lyrics"});
+        console.log(this.state.songURL);
     }
 
     render() {
@@ -37,8 +44,8 @@ export default class AppBody extends Component {
                 </form>
             </div>
             <div>
-                {this.state.queryResult.map(currentSong => {
-                    return <SongCard title={currentSong.result.full_title} key={currentSong.result.id}></SongCard>;
+                {this.state.display==="lyrics" ? <Lyrics songURL={this.state.songURL}></Lyrics> : this.state.queryResult.map(currentSong => {
+                    return (<SongCard title={currentSong.result.full_title} onClick={this.onSelectSong} songID={currentSong.result.url}></SongCard>);
                 })}
             </div>
             </div>    
